@@ -1,7 +1,7 @@
 import { existsSync, writeFileSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { requestUrl } from "obsidian";
-import { debug, warn } from "../utils/log";
+import { debug } from "../utils/log";
 
 const ORT_BASE_URL = "https://phonolite.rocks/ort";
 
