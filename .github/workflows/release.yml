@@ -1,4 +1,5 @@
-name: Release Obsidian Plugin
+name: Release Phonolite Obsidian Plugin
+
 permissions:
   contents: write
   packages: write
