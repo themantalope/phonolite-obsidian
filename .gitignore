@@ -11,6 +11,7 @@ node_modules
 # Don't include the compiled main.js file in the repo.
 # They should be uploaded to GitHub releases instead.
 main.js
+dist/
 
 # Exclude sourcemaps
 *.map
@@ -20,3 +21,27 @@ data.json
 
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store
+
+# Exclude Windows Explorer View States
+Thumbs.db
+
+# Exclude environment variable files
+.env
+.env.*.local
+.env.*.dev
+.env.dev
+
+# hotreload file for development builds
+.hotreload
+
+# dev artifacts
+inject-ort-env.js
+
+# agent files
+AGENTS.md
+CLAUDE.md
+default-convert-prompt.md
+TESTING.md
+.claude*
+
+
