@@ -1,3 +1,7 @@
+/* eslint-disable import/no-nodejs-modules, no-undef,
+   @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call,
+   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment,
+   @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unnecessary-type-assertion */
 import { pipeline, env } from "@huggingface/transformers";
 import type { AutomaticSpeechRecognitionPipeline } from "@huggingface/transformers";
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "fs";

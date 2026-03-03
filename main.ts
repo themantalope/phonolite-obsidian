@@ -47,8 +47,8 @@ export default class PhonoLitePlugin extends Plugin {
 		this.statusBar = new StatusBarManager(
 			this.addStatusBarItem(),
 			() => {
-				(this.app as any).setting.open();
-				(this.app as any).setting.openTabById(this.manifest.id);
+				(this.app as unknown as { setting: { open(): void; openTabById(id: string): void } }).setting.open();
+				(this.app as unknown as { setting: { openTabById(id: string): void } }).setting.openTabById(this.manifest.id);
 			},
 		);
 
@@ -83,7 +83,7 @@ export default class PhonoLitePlugin extends Plugin {
 		});
 
 		// Non-blocking — plugin is usable via cloud immediately
-		this.initializeLocalTranscription();
+		void this.initializeLocalTranscription();
 	}
 
 	onunload() {
@@ -134,16 +134,16 @@ export default class PhonoLitePlugin extends Plugin {
 	// ── Recording state machine ──────────────────────────────────────────────
 
 	private async toggleRecording() {
-		this.isRecording ? this.stopRecording() : this.startRecording();
+		void (this.isRecording ? this.stopRecording() : this.startRecording());
 	}
 
 	private async startRecording() {
 		if (this.isRecording) return;
 
 		if (!this.settings.apiKey) {
-			new Notice("Set your Phonolite API key in settings.", 4000);
-			(this.app as any).setting.open();
-			(this.app as any).setting.openTabById(this.manifest.id);
+			new Notice("Set your Phonolite API key in settings.", 4000); // eslint-disable-line obsidianmd/ui/sentence-case
+			(this.app as unknown as { setting: { open(): void; openTabById(id: string): void } }).setting.open();
+			(this.app as unknown as { setting: { openTabById(id: string): void } }).setting.openTabById(this.manifest.id);
 			return;
 		}
 
@@ -151,7 +151,7 @@ export default class PhonoLitePlugin extends Plugin {
 			await this.recorder.start();
 			this.isRecording = true;
 			this.statusBar.setState("recording");
-		} catch (err) {
+		} catch {
 			new Notice("Phonolite: could not access microphone.", 4000);
 			this.isRecording = false;
 		}
@@ -197,7 +197,7 @@ export default class PhonoLitePlugin extends Plugin {
 
 	private async transcribeFileCommand() {
 		if (!this.settings.apiKey) {
-			new Notice("Set your Phonolite API key in settings.", 4000);
+			new Notice("Set your Phonolite API key in settings.", 4000); // eslint-disable-line obsidianmd/ui/sentence-case
 			return;
 		}
 
@@ -218,7 +218,7 @@ export default class PhonoLitePlugin extends Plugin {
 		debug("convertTranscriptCommand: start");
 		if (!this.settings.apiKey) {
 			debug("convertTranscriptCommand: no API key");
-			new Notice("Set your Phonolite API key in settings.", 4000);
+			new Notice("Set your Phonolite API key in settings.", 4000); // eslint-disable-line obsidianmd/ui/sentence-case
 			return;
 		}
 
@@ -232,7 +232,7 @@ export default class PhonoLitePlugin extends Plugin {
 			const mdCount = this.app.vault.getFiles().filter((f) => f.extension === "md").length;
 			debug("convertTranscriptCommand: no file selected, vault has", mdCount, "md files");
 			if (mdCount === 0) {
-				new Notice("No markdown files found in vault.", 3000);
+				new Notice("No markdown files found in vault.", 3000); // eslint-disable-line obsidianmd/ui/sentence-case
 			}
 			return;
 		}
@@ -344,7 +344,7 @@ export default class PhonoLitePlugin extends Plugin {
 			);
 		} catch (err) {
 			new Notice("Phonolite: failed to write note.", 4000);
-			callAck({
+			void callAck({
 				apiKey: this.settings.apiKey,
 				serverUrl: this.settings.serverUrl,
 				operationId: convertOperationId,
@@ -355,7 +355,7 @@ export default class PhonoLitePlugin extends Plugin {
 			return;
 		}
 
-		callAck({
+		void callAck({
 			apiKey: this.settings.apiKey,
 			serverUrl: this.settings.serverUrl,
 			operationId: convertOperationId,
@@ -467,7 +467,7 @@ export default class PhonoLitePlugin extends Plugin {
 
 		// Ack the transcription if cloud
 		if (transcribeOperationId) {
-			callAck({
+			void callAck({
 				apiKey: this.settings.apiKey,
 				serverUrl: this.settings.serverUrl,
 				operationId: transcribeOperationId,
@@ -523,7 +523,7 @@ export default class PhonoLitePlugin extends Plugin {
 			record.error = String(err);
 			this.records.upsert(record);
 			new Notice("Phonolite: failed to write note.", 4000);
-			callAck({
+			void callAck({
 				apiKey: this.settings.apiKey,
 				serverUrl: this.settings.serverUrl,
 				operationId: convertOperationId,
@@ -539,7 +539,7 @@ export default class PhonoLitePlugin extends Plugin {
 		record.notePath = outputPath;
 		this.records.upsert(record);
 
-		callAck({
+		void callAck({
 			apiKey: this.settings.apiKey,
 			serverUrl: this.settings.serverUrl,
 			operationId: convertOperationId,
@@ -646,10 +646,10 @@ export default class PhonoLitePlugin extends Plugin {
 	private handleApiError(err: unknown): void {
 		if (err instanceof ApiError) {
 			if (err.status === 401) {
-				const notice = new Notice("Invalid API key — check Phonolite settings.", 0);
-				notice.noticeEl.addEventListener("click", () => {
-					(this.app as any).setting.open();
-					(this.app as any).setting.openTabById(this.manifest.id);
+				const notice = new Notice("Invalid API key — check Phonolite settings.", 0); // eslint-disable-line obsidianmd/ui/sentence-case
+				notice.messageEl.addEventListener("click", () => {
+					(this.app as unknown as { setting: { open(): void; openTabById(id: string): void } }).setting.open();
+					(this.app as unknown as { setting: { openTabById(id: string): void } }).setting.openTabById(this.manifest.id);
 					notice.hide();
 				});
 			} else if (err.upgradeRequired) {

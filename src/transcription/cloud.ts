@@ -15,13 +15,14 @@ export async function transcribeViaCloud(
 	form.append("audio", audioBlob, "recording.webm");
 	if (audioHash) form.append("hash", audioHash);
 
+	// requestUrl doesn't support FormData; fetch is required for multipart audio upload.
+	// eslint-disable-next-line no-restricted-globals
 	const response = await fetch(`${serverUrl}/api/transcribe`, {
 		method: "POST",
 		body: form,
 	});
 
 	if (!response.ok) {
-		const body = await response.json().catch(() => ({})) as Record<string, unknown>;
 		if (response.status === 401) throw new ApiError(401, "Invalid API key");
 		if (response.status === 403) throw new ApiError(403, "Usage limit reached", true);
 		throw new ApiError(response.status, `Transcription failed: ${response.status}`);

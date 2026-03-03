@@ -1,6 +1,9 @@
-import { App, PluginSettingTab, Setting, Platform } from "obsidian";
+import { App, PluginSettingTab, Setting, Platform, type FileSystemAdapter } from "obsidian";
 import type PhonoLitePlugin from "../../main";
 import { getResolvedModelPath, modelExistsOnDisk } from "../transcription/whisper";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+type AppInternal = App & { setting: { open(): void; close(): void; openTabById(id: string): void }; commands: { executeCommandById(id: string): void } };
 
 export class PhonoLiteSettingTab extends PluginSettingTab {
 	plugin: PhonoLitePlugin;
@@ -14,16 +17,16 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Phonolite" });
-
-		// ── General ─────────────────────────────────────────────────────────
-		new Setting(containerEl).setName("General").setHeading();
+		// ── Account ─────────────────────────────────────────────────────────
+		new Setting(containerEl).setName("Account").setHeading();
 
 		new Setting(containerEl)
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setName("API key")
 			.setDesc("Your Phonolite API key (pk_…). Get one at phonolite.rocks/dashboard.")
 			.addText((text) =>
 				text
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder("pk_...")
 					.setValue(this.plugin.settings.apiKey)
 					.then((t) => { t.inputEl.type = "password"; })
@@ -34,10 +37,12 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setName("Server URL")
 			.setDesc("Backend URL. Change only for self-hosted or staging deployments.")
 			.addText((text) =>
 				text
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder("https://phonolite.rocks")
 					.setValue(this.plugin.settings.serverUrl)
 					.onChange(async (value) => {
@@ -52,10 +57,13 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 		if (!Platform.isMobile) {
 			new Setting(containerEl)
 				.setName("Model size")
+				// eslint-disable-next-line obsidianmd/ui/sentence-case
 				.setDesc("Tiny is faster; Base is more accurate. Changing size downloads a new model.")
 				.addDropdown((dd) =>
 					dd
+						// eslint-disable-next-line obsidianmd/ui/sentence-case
 						.addOption("tiny", "Tiny (~40 MB, faster)")
+						// eslint-disable-next-line obsidianmd/ui/sentence-case
 						.addOption("base", "Base (~145 MB, more accurate)")
 						.setValue(this.plugin.settings.modelSize)
 						.onChange(async (value) => {
@@ -67,7 +75,7 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 
 			const resolvedPath = getResolvedModelPath(
 				this.plugin.settings,
-				(this.plugin.app.vault.adapter as any).getBasePath(),
+				(this.plugin.app.vault.adapter as FileSystemAdapter).getBasePath(),
 			);
 
 			new Setting(containerEl)
@@ -88,7 +96,8 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 						.onClick(() => {
 							// Use Electron shell to open the folder
 							try {
-								const { shell } = require("electron");
+								// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+								const { shell } = require("electron") as { shell: { openPath(p: string): void } };
 								shell.openPath(resolvedPath);
 							} catch {
 								// Ignore on non-Electron environments
@@ -124,6 +133,7 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 			.setDesc("Vault-relative folder for new notes. Leave empty to save in the vault root.")
 			.addText((text) =>
 				text
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder("e.g. Phonolite Notes")
 					.setValue(this.plugin.settings.outputFolder)
 					.onChange(async (value) => {
@@ -173,7 +183,9 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 					})
 					.then((a) => {
 						a.inputEl.rows = 12;
+						// eslint-disable-next-line obsidianmd/no-static-styles-assignment
 						a.inputEl.style.width = "100%";
+						// eslint-disable-next-line obsidianmd/no-static-styles-assignment
 						a.inputEl.style.fontFamily = "monospace";
 					}),
 			);
@@ -183,6 +195,7 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 			.setDesc("Optional: prepended to the default LLM system prompt to guide note generation.")
 			.addTextArea((area) =>
 				area
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder("e.g. Always respond in Spanish.")
 					.setValue(this.plugin.settings.customPrompt)
 					.onChange(async (value) => {
@@ -191,6 +204,7 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 					})
 					.then((a) => {
 						a.inputEl.rows = 4;
+						// eslint-disable-next-line obsidianmd/no-static-styles-assignment
 						a.inputEl.style.width = "100%";
 					}),
 			);
@@ -203,8 +217,8 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 			.setDesc("Pick an audio file from your vault and run the full pipeline: transcribe → convert → note.")
 			.addButton((btn) =>
 				btn.setButtonText("Transcribe audio…").onClick(() => {
-					(this.plugin.app as any).setting.close();
-					(this.plugin.app as any).commands.executeCommandById("phonolite:transcribe-file");
+					(this.plugin.app as AppInternal).setting.close();
+					(this.plugin.app as AppInternal).commands.executeCommandById("phonolite:transcribe-file");
 				}),
 			);
 
@@ -213,8 +227,8 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 			.setDesc("Pick a transcript (.md) from your vault and convert it into a structured note.")
 			.addButton((btn) =>
 				btn.setButtonText("Convert transcript…").onClick(() => {
-					(this.plugin.app as any).setting.close();
-					(this.plugin.app as any).commands.executeCommandById("phonolite:convert-transcript");
+					(this.plugin.app as AppInternal).setting.close();
+					(this.plugin.app as AppInternal).commands.executeCommandById("phonolite:convert-transcript");
 				}),
 			);
 	}
@@ -223,11 +237,13 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 		const exists = modelExistsOnDisk(resolvedPath, this.plugin.settings.modelSize);
 
 		if (this.plugin.modelDownloading) {
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			setting.setDesc("⏬ Downloading...");
 			return;
 		}
 
 		if (this.plugin.modelDownloadFailed) {
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			setting.setDesc("⚠️ Download failed");
 			setting.addButton((btn) =>
 				btn.setButtonText("Retry").onClick(async () => {
@@ -239,8 +255,10 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 		}
 
 		if (exists) {
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			setting.setDesc("✅ Ready");
 		} else {
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			setting.setDesc("❌ Not downloaded");
 			setting.addButton((btn) =>
 				btn.setButtonText("Download now").onClick(async () => {

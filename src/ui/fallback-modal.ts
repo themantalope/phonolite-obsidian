@@ -16,10 +16,12 @@ export class CloudFallbackModal extends Modal {
 
 		contentEl.createEl("h2", { text: "Local transcription failed" });
 		contentEl.createEl("p", {
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			text: "Send the recording to Phonolite cloud for transcription?",
 		});
 		contentEl.createEl("p", {
 			cls: "phonolite-fallback-note",
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			text: "Your audio will be sent to the Phonolite server.",
 		});
 

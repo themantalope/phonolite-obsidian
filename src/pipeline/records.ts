@@ -1,4 +1,6 @@
+// eslint-disable-next-line import/no-nodejs-modules
 import { existsSync, readFileSync, writeFileSync } from "fs";
+// eslint-disable-next-line import/no-nodejs-modules
 import { join } from "path";
 import { warn } from "../utils/log";
 
@@ -32,8 +34,8 @@ export class PipelineRecordStore {
 		try {
 			if (!existsSync(this.filePath)) return [];
 			const raw = readFileSync(this.filePath, "utf-8");
-			const parsed = JSON.parse(raw);
-			return Array.isArray(parsed) ? parsed : [];
+			const parsed: unknown = JSON.parse(raw);
+			return Array.isArray(parsed) ? (parsed as PipelineRecord[]) : [];
 		} catch {
 			return [];
 		}

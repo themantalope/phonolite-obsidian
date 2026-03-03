@@ -1,3 +1,4 @@
+import { requestUrl } from "obsidian";
 import { ApiError } from "../transcription/cloud";
 import { warn } from "../utils/log";
 
@@ -40,20 +41,21 @@ export async function callConvert(
 	if (params.hash) body.hash = params.hash;
 
 	const attempt = async () => {
-		const response = await fetch(`${params.serverUrl}/api/convert`, {
+		const response = await requestUrl({
+			url: `${params.serverUrl}/api/convert`,
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(body),
+			throw: false,
 		});
 
-		if (!response.ok) {
-			const json = await response.json().catch(() => ({})) as Record<string, unknown>;
+		if (response.status >= 400) {
 			if (response.status === 401) throw new ApiError(401, "Invalid API key");
 			if (response.status === 403) throw new ApiError(403, "Usage limit reached", true);
 			throw new ApiError(response.status, `Convert failed: ${response.status}`);
 		}
 
-		return response.json() as Promise<{ payload: NotePayload; operationId: string }>;
+		return response.json as { payload: NotePayload; operationId: string };
 	};
 
 	try {
@@ -77,10 +79,12 @@ export async function callAck(params: AckParams): Promise<void> {
 	if (params.outputHash) body.outputHash = params.outputHash;
 	if (params.error) body.error = params.error;
 
-	await fetch(`${params.serverUrl}/api/ack`, {
+	await requestUrl({
+		url: `${params.serverUrl}/api/ack`,
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(body),
+		throw: false,
 	}).catch((err) => {
 		// Ack failure is non-fatal — log and continue
 		warn("/api/ack failed:", err);
