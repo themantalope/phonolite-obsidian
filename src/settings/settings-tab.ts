@@ -2,7 +2,6 @@ import { App, PluginSettingTab, Setting, Platform, type FileSystemAdapter } from
 import type PhonoLitePlugin from "../../main";
 import { getResolvedModelPath, modelExistsOnDisk } from "../transcription/whisper";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 type AppInternal = App & { setting: { open(): void; close(): void; openTabById(id: string): void }; commands: { executeCommandById(id: string): void } };
 
 export class PhonoLiteSettingTab extends PluginSettingTab {
@@ -21,8 +20,8 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName("Account").setHeading();
 
 		new Setting(containerEl)
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setName("API key")
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setDesc("Your Phonolite API key (pk_…). Get one at phonolite.rocks/dashboard.")
 			.addText((text) =>
 				text
@@ -37,7 +36,6 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setName("Server URL")
 			.setDesc("Backend URL. Change only for self-hosted or staging deployments.")
 			.addText((text) =>
@@ -192,6 +190,7 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Custom prompt")
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setDesc("Optional: prepended to the default LLM system prompt to guide note generation.")
 			.addTextArea((area) =>
 				area

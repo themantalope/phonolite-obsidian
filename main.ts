@@ -334,9 +334,8 @@ export default class PhonoLitePlugin extends Plugin {
 		);
 		const noteHash = await sha256Hex(markdown);
 
-		let outputPath: string;
 		try {
-			outputPath = await writeNote(
+			await writeNote(
 				this.app.vault,
 				this.settings.outputFolder,
 				payload.title,

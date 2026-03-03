@@ -28,6 +28,7 @@ export default tseslint.config(
 		"ort/",
 		"esbuild.config.mjs",
 		"eslint.config.js",
+		"inject-ort-env.js",
 		"version-bump.mjs",
 		"versions.json",
 		"main.js",
