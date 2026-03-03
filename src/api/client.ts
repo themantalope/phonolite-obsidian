@@ -23,7 +23,7 @@ export interface AckParams {
 	serverUrl: string;
 	operationId: string;
 	status: "success" | "error";
-	outputPath?: string;
+	// outputPath?: string;
 	outputHash?: string;
 	error?: string;
 }
@@ -73,7 +73,7 @@ export async function callAck(params: AckParams): Promise<void> {
 		operationId: params.operationId,
 		status: params.status,
 	};
-	if (params.outputPath) body.outputPath = params.outputPath;
+	// if (params.outputPath) body.outputPath = params.outputPath;
 	if (params.outputHash) body.outputHash = params.outputHash;
 	if (params.error) body.error = params.error;
 

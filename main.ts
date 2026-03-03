@@ -360,7 +360,7 @@ export default class PhonoLitePlugin extends Plugin {
 			serverUrl: this.settings.serverUrl,
 			operationId: convertOperationId,
 			status: "success",
-			outputPath,
+			// outputPath,
 			outputHash: noteHash,
 		});
 
@@ -544,7 +544,7 @@ export default class PhonoLitePlugin extends Plugin {
 			serverUrl: this.settings.serverUrl,
 			operationId: convertOperationId,
 			status: "success",
-			outputPath,
+			// outputPath, - we should not be sending this back as it may contain PII, and the client doesn't need it to display or manage the note
 			outputHash: noteHash,
 		});
 
