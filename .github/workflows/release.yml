@@ -1,4 +1,10 @@
 name: Release Obsidian Plugin
+permissions:
+  contents: write
+  packages: write
+  deployments: write
+  releases: write
+
 
 on:
     push:
