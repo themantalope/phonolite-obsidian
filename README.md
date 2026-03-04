@@ -31,12 +31,12 @@ In local mode, your audio never leaves your device. Only the transcript text is 
 - **Customizable templates** — Control exactly how your notes are formatted with `{{token}}` placeholders.
 - **Custom prompts** — Guide the LLM with your own system prompt (e.g., "Always respond in Spanish").
 - **Retry tools** — Re-transcribe an audio file or re-convert a transcript from the command palette or settings.
-- **Pipeline tracking** — Every recording is tracked from capture to final note, so retries know the full context.
+- **Pipeline tracking** — Every recording is tracked from capture to final note, so retries know the full context. This occurs locally in your vault — we never store this data on our servers, but the plugin can access it to power features like retrying a transcription or conversion with the same audio/transcript.
 
 ## Getting started
 
 1. Install the plugin from the Obsidian Community Plugins browser (search "Phonolite")
-2. Get an API key at [phonolite.rocks/dashboard](https://phonolite.rocks/dashboard)
+2. Create and account and get an API key at [phonolite.rocks/dashboard](https://phonolite.rocks/dashboard)
 3. Paste your key in **Settings > Phonolite > API key**
 4. Start recording with the **"Start recording"** command (`Ctrl/Cmd+Shift+R` or from the command palette)
 
@@ -51,7 +51,7 @@ On desktop, the Tiny Whisper model (~40 MB) downloads automatically in the backg
 | **Transcribe audio file** | Pick an audio file from your vault and run the full pipeline |
 | **Convert transcript to note** | Pick a transcript (.md) and convert it into a structured note |
 
-## Settings
+## Plugin Settings
 
 | Setting | Description |
 |---|---|
@@ -59,7 +59,7 @@ On desktop, the Tiny Whisper model (~40 MB) downloads automatically in the backg
 | **Server URL** | Backend URL (default: `https://phonolite.rocks`) |
 | **Model size** | Tiny (~40 MB, faster) or Base (~145 MB, more accurate) |
 | **Model storage path** | Where model files are cached on disk |
-| **Force cloud transcription** | Skip local model, always use cloud |
+| **Force cloud transcription** | Skip local audio transcription model, always use cloud |
 | **Output folder** | Where generated notes are saved |
 | **Recordings folder** | Where raw audio (.webm) is saved |
 | **Transcripts folder** | Where raw transcripts (.md) are saved |
@@ -71,7 +71,8 @@ On desktop, the Tiny Whisper model (~40 MB) downloads automatically in the backg
 - **Local mode (desktop)**: Audio is transcribed on-device via Whisper. Only the transcript text is sent to the Phonolite backend for structured note generation. Your audio never leaves your machine.
 - **Cloud mode (mobile or force-cloud)**: Audio is sent to Groq via the Phonolite backend for transcription, then converted into a structured note. Audio is not stored after processing.
 - **No data persistence by AI providers** — All AI inference is powered by open-source models (Whisper, Llama) running on Groq. [Groq does not persist data](https://console.groq.com/docs/your-data) and our backend has zero-data-retention (ZDR) enabled. All traffic is routed through the Phonolite backend — your data is never sent directly to any third-party provider.
-- **What we store** If you choose to use the service, we only store your email for login/auth, api keys you create to interact with the backend, and usage data (e.g. how many minutes transcribed) for billing purposes. We do not store your audio, transcripts, or generated notes. All audio and processing artifacts are stored locally in your vault, and you can delete them at any time.
+- **What we store** If you choose to use the service, we only store your email for login/auth, api keys you create to interact with the backend, and usage data (e.g. how many minutes transcribed) for usage and billing purposes. We do not store your audio, transcripts, or generated notes. All audio and processing artifacts are stored locally in your vault, and you can delete them at any time.
+- **Privacy Policy**: Please see [our privacy policy for full details.](https://phonolite.rocks/privacy-policy)
 
 ## Pricing
 
