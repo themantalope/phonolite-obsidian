@@ -1,9 +1,9 @@
 {
-	"id": "phonolite-obsidian",
+	"id": "phonolite",
 	"name": "Phonolite",
 	"version": "1.0.0",
 	"minAppVersion": "1.0.0",
-	"description": "Structured voice notes with local and cloud transcription",
+	"description": "Voice recording to structured markdown notes, powered by AI. Local and cloud audio processing available, zero-data-retention policy for cloud AI services.",
 	"author": "Matt Antalek",
 	"authorUrl": "https://phonolite.rocks",
 	"fundingUrl": "https://phonolite.rocks",
