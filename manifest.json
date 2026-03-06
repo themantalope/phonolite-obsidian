@@ -1,7 +1,7 @@
 {
 	"id": "phonolite",
 	"name": "Phonolite",
-	"version": "1.0.0",
+	"version": "1.0.2",
 	"minAppVersion": "1.0.0",
 	"description": "Voice recording to structured markdown notes, powered by AI. Local and cloud audio processing available, zero-data-retention policy for cloud AI services.",
 	"author": "Matt Antalek",
