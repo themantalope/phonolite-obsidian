@@ -5,9 +5,8 @@ import { globalIgnores } from "eslint/config";
 
 // Extract the import plugin instance that obsidianmd already registers.
 // We need the same instance reference to avoid "Cannot redefine plugin" from ESLint.
-type AnyPlugin = Parameters<typeof tseslint.config>[number] extends { plugins?: infer P } ? NonNullable<P>[string] : never;
-const obsidianRecommended = [...(obsidianmd.configs.recommended as unknown as Iterable<{ plugins?: Record<string, AnyPlugin> }>)];
-const importPlugin = obsidianRecommended.find(c => c.plugins?.["import"])?.plugins?.["import"] as AnyPlugin;
+const obsidianRecommended = [...obsidianmd.configs.recommended];
+const importPlugin = obsidianRecommended.find(c => c.plugins?.["import"])?.plugins?.["import"];
 
 export default tseslint.config(
 	{
@@ -51,7 +50,6 @@ export default tseslint.config(
 		"dist",
 		"ort/",
 		"esbuild.config.mjs",
-		"eslint.config.js",
 		"inject-ort-env.js",
 		"version-bump.mjs",
 		"versions.json",
