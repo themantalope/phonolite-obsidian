@@ -588,6 +588,7 @@ export default class PhonoLitePlugin extends Plugin {
 	// ── Helpers ──────────────────────────────────────────────────────────────
 
 	private getModelPath(): string {
+		if (Platform.isMobile) return "";
 		const adapter = this.app.vault.adapter as FileSystemAdapter;
 		return getResolvedModelPath(this.settings, adapter.getBasePath());
 	}
