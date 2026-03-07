@@ -593,6 +593,7 @@ export default class PhonoLitePlugin extends Plugin {
 	}
 
 	private getPluginDir(): string {
+		if (Platform.isMobile) return "";
 		const adapter = this.app.vault.adapter as FileSystemAdapter;
 		return `${adapter.getBasePath()}/.obsidian/plugins/${this.manifest.id}`;
 	}

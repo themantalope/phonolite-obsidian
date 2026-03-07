@@ -1,7 +1,5 @@
 import { pipeline, env } from "@huggingface/transformers";
 import type { AutomaticSpeechRecognitionPipeline } from "@huggingface/transformers";
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "fs";
-import { join, dirname } from "path";
 import type { PhonoLiteSettings } from "../settings/settings";
 import { debug, warn } from "../utils/log";
 
@@ -19,6 +17,8 @@ class DiskCache {
 	constructor(private basePath: string) {}
 
 	private urlToPath(key: string): string {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const nodePath = require("path") as typeof import("path");
 		try {
 			const url = new URL(key);
 			// e.g. /onnx-community/whisper-tiny.en/resolve/main/onnx/model.onnx
@@ -28,29 +28,35 @@ class DiskCache {
 				// Strip "resolve/{revision}" to get: org/model/file
 				const before = parts.slice(0, resolveIdx);
 				const after = parts.slice(resolveIdx + 2);
-				return join(this.basePath, ...before, ...after);
+				return nodePath.join(this.basePath, ...before, ...after);
 			}
-			return join(this.basePath, ...parts);
+			return nodePath.join(this.basePath, ...parts);
 		} catch {
 			// Not a URL — treat as relative path
-			return join(this.basePath, key);
+			return nodePath.join(this.basePath, key);
 		}
 	}
 
 	match(request: string): Promise<Response | undefined> {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const nodeFs = require("fs") as typeof import("fs");
 		const filePath = this.urlToPath(request);
-		if (!existsSync(filePath)) return Promise.resolve(undefined);
+		if (!nodeFs.existsSync(filePath)) return Promise.resolve(undefined);
 
-		const data = readFileSync(filePath);
+		const data = nodeFs.readFileSync(filePath);
 		const headers = new Headers();
-		headers.set("content-length", statSync(filePath).size.toString());
+		headers.set("content-length", nodeFs.statSync(filePath).size.toString());
 		return Promise.resolve(new Response(data, { status: 200, headers }));
 	}
 
 	async put(request: string, response: Response): Promise<void> {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const nodeFs = require("fs") as typeof import("fs");
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const nodePath = require("path") as typeof import("path");
 		const filePath = this.urlToPath(request);
-		mkdirSync(dirname(filePath), { recursive: true });
-		writeFileSync(filePath, new Uint8Array(await response.arrayBuffer()));
+		nodeFs.mkdirSync(nodePath.dirname(filePath), { recursive: true });
+		nodeFs.writeFileSync(filePath, new Uint8Array(await response.arrayBuffer()));
 	}
 }
 
@@ -95,7 +101,11 @@ function applyOrtConfig(pluginDir: string): void {
 		// import('worker_threads') fires, but blob: URLs run as browser ESM and have
 		// no Node.js module resolution → TypeError: Failed to resolve module specifier.
 		// Fix: add process.type !== 'renderer' guard to the isNode check.
-		let mjsText = readFileSync(join(pluginDir, "ort-wasm-simd-threaded.jsep.mjs"), "utf-8");
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const nodeFs = require("fs") as typeof import("fs");
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const nodePath = require("path") as typeof import("path");
+		let mjsText = nodeFs.readFileSync(nodePath.join(pluginDir, "ort-wasm-simd-threaded.jsep.mjs"), "utf-8");
 		mjsText = mjsText.replace(
 			"var isNode = typeof globalThis.process?.versions?.node == 'string';",
 			"var isNode = typeof globalThis.process?.versions?.node == 'string' && globalThis.process?.type !== 'renderer';",
@@ -113,7 +123,11 @@ function applyOrtConfig(pluginDir: string): void {
 		// "Invalid URL". Setting wasmPaths.wasm causes ORT runtime to set:
 		//   y.locateFile = g => jsepWasmBlobUrl
 		// which the JSEP module uses directly — no URL constructor needed.
-		const wasmData = readFileSync(join(pluginDir, "ort-wasm-simd-threaded.jsep.wasm"));
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const nodeFs = require("fs") as typeof import("fs");
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const nodePath = require("path") as typeof import("path");
+		const wasmData = nodeFs.readFileSync(nodePath.join(pluginDir, "ort-wasm-simd-threaded.jsep.wasm"));
 		jsepWasmBlobUrl = URL.createObjectURL(new Blob([wasmData], { type: "application/wasm" }));
 	} catch (e) {
 		warn("ORT blob URL failed for jsep.wasm:", e);
@@ -169,14 +183,20 @@ export function modelExistsOnDisk(
 	// the cache key (hub.js: requestURL = pathJoin(path_or_repo_id, filename)).
 	// So model files land at: {cacheDir}/{org}/{model}/{filename}
 	// We check for config.json as a sentinel that the download completed.
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const nodeFs = require("fs") as typeof import("fs");
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const nodePath = require("path") as typeof import("path");
 	const modelId = MODEL_IDS[modelSize]; // e.g. "onnx-community/whisper-tiny.en"
 	const [org, model] = modelId.split("/") as [string, string];
-	return existsSync(join(cacheDir, org, model, "config.json"));
+	return nodeFs.existsSync(nodePath.join(cacheDir, org, model, "config.json"));
 }
 
 export function clearModelCache(cacheDir: string): void {
-	rmSync(cacheDir, { recursive: true, force: true });
-	mkdirSync(cacheDir, { recursive: true });
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const nodeFs = require("fs") as typeof import("fs");
+	nodeFs.rmSync(cacheDir, { recursive: true, force: true });
+	nodeFs.mkdirSync(cacheDir, { recursive: true });
 }
 
 export class WhisperTranscriber {
