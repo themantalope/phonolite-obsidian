@@ -1,7 +1,3 @@
-/* eslint-disable import/no-nodejs-modules, no-undef,
-   @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call,
-   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment,
-   @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unnecessary-type-assertion */
 import { pipeline, env } from "@huggingface/transformers";
 import type { AutomaticSpeechRecognitionPipeline } from "@huggingface/transformers";
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "fs";
@@ -41,21 +37,20 @@ class DiskCache {
 		}
 	}
 
-	async match(request: string): Promise<Response | undefined> {
+	match(request: string): Promise<Response | undefined> {
 		const filePath = this.urlToPath(request);
-		if (!existsSync(filePath)) return undefined;
+		if (!existsSync(filePath)) return Promise.resolve(undefined);
 
 		const data = readFileSync(filePath);
 		const headers = new Headers();
 		headers.set("content-length", statSync(filePath).size.toString());
-		return new Response(data, { status: 200, headers });
+		return Promise.resolve(new Response(data, { status: 200, headers }));
 	}
 
 	async put(request: string, response: Response): Promise<void> {
 		const filePath = this.urlToPath(request);
 		mkdirSync(dirname(filePath), { recursive: true });
-		const buffer = Buffer.from(await response.arrayBuffer());
-		writeFileSync(filePath, buffer);
+		writeFileSync(filePath, new Uint8Array(await response.arrayBuffer()));
 	}
 }
 
@@ -65,10 +60,12 @@ function configureEnv(cacheDir: string, allowRemote: boolean, pluginDir: string)
 	env.allowRemoteModels = allowRemote;
 	// Bypass both browser Cache API and built-in FileCache (which needs node:fs).
 	// Our DiskCache writes to the same paths that modelExistsOnDisk() checks.
-	(env as any).useCustomCache = true;
-	(env as any).customCache = new DiskCache(cacheDir);
-	(env as any).useBrowserCache = false;
-	(env as any).useFSCache = false;
+	// These are undocumented transformers.js env flags — cast through Record to avoid any.
+	const envExt = env as Record<string, unknown>;
+	envExt.useCustomCache = true;
+	envExt.customCache = new DiskCache(cacheDir);
+	envExt.useBrowserCache = false;
+	envExt.useFSCache = false;
 	applyOrtConfig(pluginDir);
 }
 
@@ -122,10 +119,14 @@ function applyOrtConfig(pluginDir: string): void {
 		warn("ORT blob URL failed for jsep.wasm:", e);
 	}
 
-	const backends = env.backends as any;
+	interface OnnxWasmConfig { numThreads?: number; proxy?: boolean; wasmPaths?: Record<string, string> }
+	interface OnnxBackend { wasm?: OnnxWasmConfig }
+	interface OnnxEnvLike { onnx?: OnnxBackend }
+
+	const backends = env.backends as unknown as OnnxEnvLike;
 	const onnxEnv = backends?.onnx;
 
-	const applyConfig = (onnx: any) => {
+	const applyConfig = (onnx: OnnxBackend) => {
 		if (onnx?.wasm) {
 			onnx.wasm.numThreads = 1;
 			onnx.wasm.proxy = false;
@@ -145,10 +146,10 @@ function applyOrtConfig(pluginDir: string): void {
 		// Fallback: intercept via Proxy in case the onnx backend is assigned lazily.
 		env.backends = new Proxy(backends ?? {}, {
 			set(target, prop, value) {
-				if (prop === "onnx") applyConfig(value);
+				if (prop === "onnx") applyConfig(value as OnnxBackend);
 				return Reflect.set(target, prop, value);
 			},
-		}) as any;
+		}) as unknown as typeof env.backends;
 	}
 }
 
@@ -199,23 +200,25 @@ export class WhisperTranscriber {
 		debug(`env after: cacheDir=${env.cacheDir}, allowRemote=${env.allowRemoteModels}, allowLocal=${env.allowLocalModels}`);
 		onProgress?.(cached ? "loading" : "downloading");
 
-		// Cast through any to avoid TS2590 — pipeline() has deeply complex overload unions.
+		// Cast through unknown to avoid TS2590 — pipeline() has deeply complex overload unions.
 		// device: "wasm" forces WASM-only execution providers so ORT never tries to
 		// load the JSEP/WebGPU backend (.jsep.mjs), which would also fail in Electron.
+		type PipelineFn = (task: string, model: string, options: object) => Promise<AutomaticSpeechRecognitionPipeline>;
 		debug("calling pipeline()...");
-		this.pipe = (await (pipeline as any)(
+		this.pipe = await (pipeline as unknown as PipelineFn)(
 			"automatic-speech-recognition",
 			modelId,
 			{
 				dtype: "q8",
 				device: "wasm",
-				progress_callback: (info: any) => {
+				progress_callback: (info: unknown) => {
 					debug("pipeline progress:", JSON.stringify(info));
-					if (info.status === "download") onProgress?.("downloading");
-					if (info.status === "ready") onProgress?.("loading");
+					const i = info as Record<string, unknown>;
+					if (i.status === "download") onProgress?.("downloading");
+					if (i.status === "ready") onProgress?.("loading");
 				},
 			},
-		)) as AutomaticSpeechRecognitionPipeline;
+		);
 		debug("pipeline() returned successfully");
 	}
 
@@ -224,15 +227,13 @@ export class WhisperTranscriber {
 
 		const arrayBuffer = await blob.arrayBuffer();
 		const audio = await this.decodeToFloat32(arrayBuffer);
-		const result = await (this.pipe as any)(audio, { sampling_rate: 16000 });
+		type InferFn = (audio: Float32Array, opts: object) => Promise<{ text: string } | Array<{ text: string }>>;
+		const result = await (this.pipe as unknown as InferFn)(audio, { sampling_rate: 16000 });
 
 		if (Array.isArray(result)) {
-			return (result as any[])
-				.map((r) => r.text)
-				.join(" ")
-				.trim();
+			return result.map((r) => r.text).join(" ").trim();
 		}
-		return (result as any).text?.trim() ?? "";
+		return result.text?.trim() ?? "";
 	}
 
 	private async decodeToFloat32(
@@ -265,7 +266,7 @@ export class WhisperTranscriber {
 	}
 
 	dispose(): void {
-		(this.pipe as any)?.dispose?.();
+		(this.pipe as { dispose?: () => void } | null)?.dispose?.();
 		this.pipe = null;
 	}
 }

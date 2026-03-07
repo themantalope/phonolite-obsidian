@@ -21,12 +21,10 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("API key")
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			.setDesc("Your Phonolite API key (pk_…). Get one at phonolite.rocks/dashboard.")
+			.setDesc("Your Phonolite API key (pk_…). Get one at Phonolite.rocks/dashboard.")
 			.addText((text) =>
 				text
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
-					.setPlaceholder("pk_...")
+					.setPlaceholder("")
 					.setValue(this.plugin.settings.apiKey)
 					.then((t) => { t.inputEl.type = "password"; })
 					.onChange(async (value) => {
@@ -40,8 +38,7 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 			.setDesc("Backend URL. Change only for self-hosted or staging deployments.")
 			.addText((text) =>
 				text
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
-					.setPlaceholder("https://phonolite.rocks")
+					.setPlaceholder("")
 					.setValue(this.plugin.settings.serverUrl)
 					.onChange(async (value) => {
 						this.plugin.settings.serverUrl = value.trim() || "https://phonolite.rocks";
@@ -55,13 +52,10 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 		if (!Platform.isMobile) {
 			new Setting(containerEl)
 				.setName("Model size")
-				// eslint-disable-next-line obsidianmd/ui/sentence-case
-				.setDesc("Tiny is faster; Base is more accurate. Changing size downloads a new model.")
+				.setDesc("Tiny is faster; base is more accurate. Changing size downloads a new model.")
 				.addDropdown((dd) =>
 					dd
-						// eslint-disable-next-line obsidianmd/ui/sentence-case
 						.addOption("tiny", "Tiny (~40 MB, faster)")
-						// eslint-disable-next-line obsidianmd/ui/sentence-case
 						.addOption("base", "Base (~145 MB, more accurate)")
 						.setValue(this.plugin.settings.modelSize)
 						.onChange(async (value) => {
@@ -94,7 +88,7 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 						.onClick(() => {
 							// Use Electron shell to open the folder
 							try {
-								// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+								// eslint-disable-next-line @typescript-eslint/no-require-imports -- electron available in Obsidian desktop (Electron app)
 								const { shell } = require("electron") as { shell: { openPath(p: string): void } };
 								shell.openPath(resolvedPath);
 							} catch {
@@ -131,8 +125,7 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 			.setDesc("Vault-relative folder for new notes. Leave empty to save in the vault root.")
 			.addText((text) =>
 				text
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
-					.setPlaceholder("e.g. Phonolite Notes")
+					.setPlaceholder("E.g. Phonolite notes")
 					.setValue(this.plugin.settings.outputFolder)
 					.onChange(async (value) => {
 						this.plugin.settings.outputFolder = value.trim();
@@ -181,21 +174,16 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 					})
 					.then((a) => {
 						a.inputEl.rows = 12;
-						// eslint-disable-next-line obsidianmd/no-static-styles-assignment
-						a.inputEl.style.width = "100%";
-						// eslint-disable-next-line obsidianmd/no-static-styles-assignment
-						a.inputEl.style.fontFamily = "monospace";
+						a.inputEl.addClass("phonolite-monospace-textarea");
 					}),
 			);
 
 		new Setting(containerEl)
 			.setName("Custom prompt")
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setDesc("Optional: prepended to the default LLM system prompt to guide note generation.")
 			.addTextArea((area) =>
 				area
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
-					.setPlaceholder("e.g. Always respond in Spanish.")
+					.setPlaceholder("")
 					.setValue(this.plugin.settings.customPrompt)
 					.onChange(async (value) => {
 						this.plugin.settings.customPrompt = value;
@@ -203,8 +191,7 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 					})
 					.then((a) => {
 						a.inputEl.rows = 4;
-						// eslint-disable-next-line obsidianmd/no-static-styles-assignment
-						a.inputEl.style.width = "100%";
+						a.inputEl.addClass("phonolite-fullwidth-textarea");
 					}),
 			);
 
@@ -236,14 +223,12 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 		const exists = modelExistsOnDisk(resolvedPath, this.plugin.settings.modelSize);
 
 		if (this.plugin.modelDownloading) {
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			setting.setDesc("⏬ Downloading...");
+			setting.setDesc("⏬ downloading...");
 			return;
 		}
 
 		if (this.plugin.modelDownloadFailed) {
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			setting.setDesc("⚠️ Download failed");
+			setting.setDesc("⚠️ download failed");
 			setting.addButton((btn) =>
 				btn.setButtonText("Retry").onClick(async () => {
 					await this.plugin.downloadModelAndInit();
@@ -254,11 +239,9 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 		}
 
 		if (exists) {
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			setting.setDesc("✅ Ready");
+			setting.setDesc("✅ ready");
 		} else {
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			setting.setDesc("❌ Not downloaded");
+			setting.setDesc("❌ not downloaded");
 			setting.addButton((btn) =>
 				btn.setButtonText("Download now").onClick(async () => {
 					await this.plugin.downloadModelAndInit();

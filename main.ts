@@ -133,7 +133,7 @@ export default class PhonoLitePlugin extends Plugin {
 
 	// ── Recording state machine ──────────────────────────────────────────────
 
-	private async toggleRecording() {
+	private toggleRecording() {
 		void (this.isRecording ? this.stopRecording() : this.startRecording());
 	}
 
@@ -141,7 +141,7 @@ export default class PhonoLitePlugin extends Plugin {
 		if (this.isRecording) return;
 
 		if (!this.settings.apiKey) {
-			new Notice("Set your Phonolite API key in settings.", 4000); // eslint-disable-line obsidianmd/ui/sentence-case
+			new Notice("Set your Phonolite API key in settings.", 4000);
 			(this.app as unknown as { setting: { open(): void; openTabById(id: string): void } }).setting.open();
 			(this.app as unknown as { setting: { openTabById(id: string): void } }).setting.openTabById(this.manifest.id);
 			return;
@@ -197,7 +197,7 @@ export default class PhonoLitePlugin extends Plugin {
 
 	private async transcribeFileCommand() {
 		if (!this.settings.apiKey) {
-			new Notice("Set your Phonolite API key in settings.", 4000); // eslint-disable-line obsidianmd/ui/sentence-case
+			new Notice("Set your Phonolite API key in settings.", 4000);
 			return;
 		}
 
@@ -218,7 +218,7 @@ export default class PhonoLitePlugin extends Plugin {
 		debug("convertTranscriptCommand: start");
 		if (!this.settings.apiKey) {
 			debug("convertTranscriptCommand: no API key");
-			new Notice("Set your Phonolite API key in settings.", 4000); // eslint-disable-line obsidianmd/ui/sentence-case
+			new Notice("Set your Phonolite API key in settings.", 4000);
 			return;
 		}
 
@@ -232,7 +232,7 @@ export default class PhonoLitePlugin extends Plugin {
 			const mdCount = this.app.vault.getFiles().filter((f) => f.extension === "md").length;
 			debug("convertTranscriptCommand: no file selected, vault has", mdCount, "md files");
 			if (mdCount === 0) {
-				new Notice("No markdown files found in vault.", 3000); // eslint-disable-line obsidianmd/ui/sentence-case
+				new Notice("No markdown files found in vault.", 3000);
 			}
 			return;
 		}
@@ -645,14 +645,14 @@ export default class PhonoLitePlugin extends Plugin {
 	private handleApiError(err: unknown): void {
 		if (err instanceof ApiError) {
 			if (err.status === 401) {
-				const notice = new Notice("Invalid API key — check Phonolite settings.", 0); // eslint-disable-line obsidianmd/ui/sentence-case
+				const notice = new Notice("Invalid API key — check Phonolite settings.", 0);
 				notice.messageEl.addEventListener("click", () => {
 					(this.app as unknown as { setting: { open(): void; openTabById(id: string): void } }).setting.open();
 					(this.app as unknown as { setting: { openTabById(id: string): void } }).setting.openTabById(this.manifest.id);
 					notice.hide();
 				});
 			} else if (err.upgradeRequired) {
-				new Notice("Usage limit reached — upgrade at phonolite.rocks/#pricing", 5000);
+				new Notice("Usage limit reached — upgrade at Phonolite.rocks/#pricing", 5000);
 			} else {
 				new Notice(`Phonolite error: ${err.message}`, 4000);
 			}

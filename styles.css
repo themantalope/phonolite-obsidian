@@ -6,3 +6,12 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.phonolite-monospace-textarea {
+	width: 100%;
+	font-family: monospace;
+}
+
+.phonolite-fullwidth-textarea {
+	width: 100%;
+}

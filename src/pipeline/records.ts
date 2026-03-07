@@ -1,6 +1,4 @@
-// eslint-disable-next-line import/no-nodejs-modules
 import { existsSync, readFileSync, writeFileSync } from "fs";
-// eslint-disable-next-line import/no-nodejs-modules
 import { join } from "path";
 import { warn } from "../utils/log";
 

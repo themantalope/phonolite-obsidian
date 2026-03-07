@@ -1,6 +1,4 @@
-// eslint-disable-next-line import/no-nodejs-modules
 import { existsSync, writeFileSync, mkdirSync } from "fs";
-// eslint-disable-next-line import/no-nodejs-modules
 import { join, dirname } from "path";
 import { requestUrl } from "obsidian";
 import { debug } from "../utils/log";
@@ -31,8 +29,7 @@ export async function ensureOrtAssets(pluginDir: string): Promise<void> {
 		const url = `${ORT_BASE_URL}/${file}`;
 		const response = await requestUrl({ url });
 		mkdirSync(dirname(dest), { recursive: true });
-		// eslint-disable-next-line no-undef
-		writeFileSync(dest, Buffer.from(response.arrayBuffer));
+		writeFileSync(dest, new Uint8Array(response.arrayBuffer));
 		debug("Saved ORT asset:", file);
 	}
 }
