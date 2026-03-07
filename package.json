@@ -1,6 +1,6 @@
 {
 	"name": "phonolite",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Structured voice notes with local and cloud transcription",
 	"main": "main.js",
 	"type": "module",
