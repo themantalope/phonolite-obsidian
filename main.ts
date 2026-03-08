@@ -365,6 +365,14 @@ export default class PhonoLitePlugin extends Plugin {
 			outputHash: noteHash,
 		});
 
+		// Update record if one exists for this transcript
+		if (existing) {
+			existing.status = "written";
+			existing.transcriptHash = transcriptHash;
+			existing.operationIds.push(convertOperationId);
+			this.records.upsert(existing);
+		}
+
 		new Notice("Note created from transcript", 3000);
 		this.statusBar.setState(this.whisper.isReady() ? "ready-local" : "ready-cloud");
 	}
