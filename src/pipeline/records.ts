@@ -1,3 +1,4 @@
+import type { DataAdapter } from "obsidian";
 import { warn } from "../utils/log";
 
 export interface PipelineRecord {
@@ -15,49 +16,32 @@ export interface PipelineRecord {
 	timestamp: string;
 }
 
-const RECORDS_FILE = "records.json";
-
 export class PipelineRecordStore {
 	private records: PipelineRecord[] = [];
-	private filePath = "";
-	private hasFs = false;
 
-	constructor(pluginDir: string) {
-		if (!pluginDir) return; // mobile: in-memory only
-		try {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const nodePath = require("path") as typeof import("path");
-			this.filePath = nodePath.join(pluginDir, RECORDS_FILE);
-			this.hasFs = true;
-			this.records = this.loadFromDisk();
-		} catch {
-			// Mobile: Node.js path module unavailable — run in-memory only
-		}
-	}
+	constructor(
+		private adapter: DataAdapter,
+		private filePath: string,
+	) {}
 
-	private loadFromDisk(): PipelineRecord[] {
-		if (!this.hasFs) return [];
+	async load(): Promise<void> {
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const nodeFs = require("fs") as typeof import("fs");
-			if (!nodeFs.existsSync(this.filePath)) return [];
-			const raw = nodeFs.readFileSync(this.filePath, "utf-8");
+			if (!(await this.adapter.exists(this.filePath))) return;
+			const raw = await this.adapter.read(this.filePath);
 			const parsed: unknown = JSON.parse(raw);
-			return Array.isArray(parsed) ? (parsed as PipelineRecord[]) : [];
+			this.records = Array.isArray(parsed) ? (parsed as PipelineRecord[]) : [];
 		} catch {
-			return [];
+			this.records = [];
 		}
 	}
 
 	private saveToDisk(): void {
-		if (!this.hasFs) return;
-		try {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const nodeFs = require("fs") as typeof import("fs");
-			nodeFs.writeFileSync(this.filePath, JSON.stringify(this.records, null, 2));
-		} catch (err) {
-			warn("Failed to save records:", err);
-		}
+		const dir = this.filePath.substring(0, this.filePath.lastIndexOf("/"));
+		void this.adapter
+			.mkdir(dir)
+			.catch(() => { /* directory likely exists */ })
+			.then(() => this.adapter.write(this.filePath, JSON.stringify(this.records, null, 2)))
+			.catch((err) => warn("Failed to save records:", err));
 	}
 
 	getAll(): PipelineRecord[] {

@@ -42,7 +42,9 @@ export default class PhonoLitePlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.records = new PipelineRecordStore(this.getPluginDir());
+		const recordsPath = `${this.app.vault.configDir}/plugins/${this.manifest.id}/records.json`;
+		this.records = new PipelineRecordStore(this.app.vault.adapter, recordsPath);
+		await this.records.load();
 
 		this.statusBar = new StatusBarManager(
 			this.addStatusBarItem(),
