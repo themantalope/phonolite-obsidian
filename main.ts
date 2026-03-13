@@ -61,6 +61,12 @@ export default class PhonoLitePlugin extends Plugin {
 		);
 
 		this.addCommand({
+			id: "toggle-recording",
+			name: "Toggle recording",
+			callback: () => this.toggleRecording(),
+		});
+
+		this.addCommand({
 			id: "start-recording",
 			name: "Start recording",
 			callback: () => this.startRecording(),
