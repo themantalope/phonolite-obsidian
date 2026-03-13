@@ -195,6 +195,45 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 					}),
 			);
 
+		// ── iOS Shortcuts ────────────────────────────────────────────────────
+		if (Platform.isMobile) {
+			new Setting(containerEl).setName("iOS Shortcuts").setHeading();
+
+			const vaultName = encodeURIComponent(this.app.vault.getName());
+			const startUrl = `obsidian://advanced-uri?vault=${vaultName}&commandid=phonolite:start-recording`;
+			const stopUrl  = `obsidian://advanced-uri?vault=${vaultName}&commandid=phonolite:stop-recording`;
+
+			const makeShortcutSetting = (name: string, desc: string, url: string) => {
+				new Setting(containerEl)
+					.setName(name)
+					.setDesc(desc)
+					.addText((text) =>
+						text.setValue(url).then((t) => {
+							t.inputEl.readOnly = true;
+							t.inputEl.style.fontSize = "11px";
+							t.inputEl.style.width = "100%";
+						}),
+					)
+					.addButton((btn) =>
+						btn.setButtonText("Copy").onClick(() => {
+							navigator.clipboard.writeText(url).then(() => {
+								btn.setButtonText("Copied!");
+								setTimeout(() => btn.setButtonText("Copy"), 2000);
+							});
+						}),
+					);
+			};
+
+			new Setting(containerEl)
+				.setDesc(
+					"Use these URLs in the iOS Shortcuts app to trigger recording from your home screen. " +
+					"Requires the free Obsidian Advanced URI plugin.",
+				);
+
+			makeShortcutSetting("Start recording URL", "Paste into a Shortcuts → Open URLs action.", startUrl);
+			makeShortcutSetting("Stop recording URL",  "Paste into a second shortcut to stop.", stopUrl);
+		}
+
 		// ── Tools ────────────────────────────────────────────────────────────
 		new Setting(containerEl).setName("Tools").setHeading();
 

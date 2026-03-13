@@ -153,6 +153,7 @@ export default class PhonoLitePlugin extends Plugin {
 			await this.recorder.start();
 			this.isRecording = true;
 			this.statusBar.setState("recording");
+			if (Platform.isMobile) new Notice("🔴 Recording started — tap the mic to stop.", 3000);
 		} catch {
 			new Notice("Phonolite: could not access microphone.", 4000);
 			this.isRecording = false;
@@ -162,6 +163,7 @@ export default class PhonoLitePlugin extends Plugin {
 	private async stopRecording() {
 		if (!this.isRecording) return;
 		this.isRecording = false;
+		if (Platform.isMobile) new Notice("⏹ Recording stopped — transcribing...", 3000);
 
 		let recordingResult;
 		try {

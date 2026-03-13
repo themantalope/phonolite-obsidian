@@ -42,3 +42,23 @@ Phonolite is currently awaiting review for the Obsidian Community Plugins direct
 1. Go to **Settings** → **Phonolite**
 2. Enter your API key — get one at [phonolite.rocks/dashboard](https://phonolite.rocks/dashboard)
 3. Click the Phonolite icon in the status bar (bottom of Obsidian) to start recording
+
+---
+
+## iOS Shortcut (optional)
+
+You can start a Phonolite recording directly from your iPhone home screen or Lock Screen using the iOS Shortcuts app — no need to navigate inside Obsidian.
+
+**Requirements**: the free [Obsidian Advanced URI](https://obsidian.md/plugins?id=obsidian-advanced-uri) community plugin must be installed in your vault.
+
+**Setup**:
+1. Install **Obsidian Advanced URI** via Community Plugins
+2. Open Obsidian → **Settings** → **Phonolite** → scroll to **iOS Shortcuts**
+3. Tap **Copy** next to "Start recording URL" — the correct URL for your vault is pre-filled
+4. Open the **Shortcuts** app on your iPhone
+5. Create a new shortcut with a single **"Open URLs"** action and paste the copied URL
+6. Add the shortcut to your Home Screen or Lock Screen
+
+Repeat steps 3–6 with the "Stop recording URL" to create a second shortcut that stops recording.
+
+Tapping the start shortcut will open Obsidian and immediately begin recording.
