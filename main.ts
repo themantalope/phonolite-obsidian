@@ -26,6 +26,15 @@ import { ortAssetsExist, ensureOrtAssets } from "./src/transcription/ort-assets"
 import { pickFile } from "./src/ui/file-suggester";
 import { debug, warn } from "./src/utils/log";
 
+/** Insert a key: value line into the YAML frontmatter of a markdown string. */
+function insertIntoFrontmatter(content: string, key: string, value: string): string {
+	// Frontmatter must start at position 0 with "---\n"
+	if (!content.startsWith("---\n")) return content + `\n${key}: ${value}`;
+	const closingIndex = content.indexOf("\n---", 4);
+	if (closingIndex === -1) return content + `\n${key}: ${value}`;
+	return content.slice(0, closingIndex) + `\n${key}: ${value}` + content.slice(closingIndex);
+}
+
 export default class PhonoLitePlugin extends Plugin {
 	settings: PhonoLiteSettings;
 
@@ -625,13 +634,13 @@ export default class PhonoLitePlugin extends Plugin {
 		record.notePath = outputPath;
 		this.records.upsert(record);
 
-		// Link note back from transcript file
+		// Insert note link into transcript frontmatter so audio → transcript → note are all connected
 		if (record.transcriptPath) {
 			try {
 				const transcriptContent = await this.app.vault.adapter.read(record.transcriptPath);
 				await this.app.vault.adapter.write(
 					record.transcriptPath,
-					transcriptContent + `\n\n---\nnote: "[[${outputPath}]]"\n`,
+					insertIntoFrontmatter(transcriptContent, "note", `"[[${outputPath}]]"`),
 				);
 			} catch { /* non-critical */ }
 		}
