@@ -268,17 +268,10 @@ export default class PhonoLitePlugin extends Plugin {
 			return;
 		}
 
-		// Refresh the vault index in case the file was saved externally (e.g. iOS Shortcut)
-		await this.app.vault.adapter.exists(latestPath); // nudges the adapter
-		const file = this.app.vault.getFileByPath(latestPath)
-			?? this.app.vault.getAbstractFileByPath(latestPath) as TFile | null;
-		if (!file || !(file instanceof TFile)) {
-			new Notice("Could not open recording file.", 4000);
-			return;
-		}
-
 		new Notice("Processing latest recording…", 2000);
-		await this.processAudioFile(file);
+		// Read directly via adapter — bypasses the vault index, which may not yet
+		// reflect a file written externally by iOS Shortcuts.
+		await this.processAudioAtPath(latestPath);
 	}
 
 	private async transcribeFileCommand() {
@@ -327,8 +320,14 @@ export default class PhonoLitePlugin extends Plugin {
 	}
 
 	private async processAudioFile(file: TFile) {
-		const data = await this.app.vault.readBinary(file);
-		const blob = new Blob([data], { type: `audio/${file.extension}` });
+		await this.processAudioAtPath(file.path, file.extension);
+	}
+
+	/** Read audio directly from the filesystem path (bypasses vault index — safe for externally-written files). */
+	private async processAudioAtPath(filePath: string, extension?: string) {
+		const ext = extension ?? filePath.split(".").pop() ?? "m4a";
+		const data = await this.app.vault.adapter.readBinary(filePath);
+		const blob = new Blob([data], { type: `audio/${ext}` });
 		const audioHash = await sha256Hex(data);
 
 		// Decode to get duration
@@ -360,7 +359,7 @@ export default class PhonoLitePlugin extends Plugin {
 			record = {
 				audioHash,
 				audioSeconds: durationSeconds,
-				recordingPath: file.path,
+				recordingPath: filePath,
 				status: "recording",
 				operationIds: [],
 				timestamp,
