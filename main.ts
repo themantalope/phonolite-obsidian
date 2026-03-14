@@ -251,8 +251,19 @@ export default class PhonoLitePlugin extends Plugin {
 			}
 		}
 
-		const file = this.app.vault.getFileByPath(latestPath);
-		if (!file) {
+		// Wait for the file to finish writing (important when called from iOS Shortcut
+		// immediately after Save File — iCloud may still be flushing bytes to disk).
+		const isReady = await this.waitForFileStable(latestPath);
+		if (!isReady) {
+			new Notice("Recording file is not ready yet — try again in a moment.", 4000);
+			return;
+		}
+
+		// Refresh the vault index in case the file was saved externally (e.g. iOS Shortcut)
+		await this.app.vault.adapter.exists(latestPath); // nudges the adapter
+		const file = this.app.vault.getFileByPath(latestPath)
+			?? this.app.vault.getAbstractFileByPath(latestPath) as TFile | null;
+		if (!file || !(file instanceof TFile)) {
 			new Notice("Could not open recording file.", 4000);
 			return;
 		}
@@ -638,6 +649,23 @@ export default class PhonoLitePlugin extends Plugin {
 		const label = usedCloud ? "Transcribed via Phonolite" : "Transcribed locally";
 		new Notice(`${icon} ${label}`, 3000);
 		this.statusBar.setState(usedCloud ? "ready-cloud" : "ready-local");
+	}
+
+	// ── Helpers ──────────────────────────────────────────────────────────────
+
+	/** Poll until the file size is stable across two consecutive reads (or timeout). */
+	private async waitForFileStable(path: string, timeoutMs = 6000): Promise<boolean> {
+		const interval = 500;
+		const maxAttempts = timeoutMs / interval;
+		let prevSize = -1;
+		for (let i = 0; i < maxAttempts; i++) {
+			await new Promise<void>((resolve) => setTimeout(resolve, interval));
+			const stat = await this.app.vault.adapter.stat(path);
+			if (!stat || stat.size === 0) continue;
+			if (stat.size === prevSize) return true;
+			prevSize = stat.size;
+		}
+		return prevSize > 0;
 	}
 
 	// ── Artifact saving ─────────────────────────────────────────────────────

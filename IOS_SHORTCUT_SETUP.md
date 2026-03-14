@@ -53,13 +53,19 @@ You also need to know your **vault's recordings folder path** on your iPhone. By
    - Local: `On My iPhone → Obsidian → [Vault Name] → phonolite → recordings`
    > If the `phonolite/recordings` folder doesn't exist yet, open Obsidian and make one recording via the mic button first — Phonolite creates the folder automatically.
 
-**Add action 3: Open URL**
-8. Tap **+** → search **"Open URLs"** → tap it
-9. Tap the blue URL field → paste your copied URL
+**Add action 3: Wait**
+8. Tap **+** → search **"Wait"** → tap it
+9. Set the duration to **3 seconds**
+
+> This gives iCloud time to finish writing the file before Phonolite reads it. Without this, the transcription may produce gibberish.
+
+**Add action 4: Open URL**
+10. Tap **+** → search **"Open URLs"** → tap it
+11. Tap the blue URL field → paste your copied URL
 
 **Name and save**
-10. Tap the shortcut name at the top → rename it **"Phonolite"** (or anything you like)
-11. Tap **Done**
+12. Tap the shortcut name at the top → rename it **"Phonolite"** (or anything you like)
+13. Tap **Done**
 
 ---
 
