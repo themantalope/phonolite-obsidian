@@ -200,37 +200,32 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 			new Setting(containerEl).setName("iOS Shortcuts").setHeading();
 
 			const vaultName = encodeURIComponent(this.app.vault.getName());
-			const startUrl  = `obsidian://advanced-uri?vault=${vaultName}&commandid=phonolite:start-recording`;
-			const stopUrl   = `obsidian://advanced-uri?vault=${vaultName}&commandid=phonolite:stop-recording`;
+			const transcribeLatestUrl = `obsidian://advanced-uri?vault=${vaultName}&commandid=phonolite:transcribe-latest-recording`;
 
 			new Setting(containerEl)
 				.setDesc(
-					"Create two shortcuts on your iPhone home screen — one to start, one to stop. " +
+					"Create a single shortcut that records audio, saves it, and transcribes it automatically. " +
 					"Requires the free Obsidian Advanced URI plugin.",
 				);
 
-			const makeUrlRow = (name: string, desc: string, url: string) =>
-				new Setting(containerEl)
-					.setName(name)
-					.setDesc(desc)
-					.addText((text) =>
-						text.setValue(url).then((t) => {
-							t.inputEl.readOnly = true;
-							t.inputEl.style.fontSize = "11px";
-							t.inputEl.style.width = "100%";
-						}),
-					)
-					.addButton((btn) =>
-						btn.setButtonText("Copy").onClick(() => {
-							navigator.clipboard.writeText(url).then(() => {
-								btn.setButtonText("Copied!");
-								setTimeout(() => btn.setButtonText("Copy"), 2000);
-							});
-						}),
-					);
-
-			makeUrlRow("Start recording URL", "Copy \u2192 paste into a new Shortcuts 'Open URLs' action \u2192 add to home screen.", startUrl);
-			makeUrlRow("Stop recording URL",  "Copy \u2192 paste into a second Shortcuts 'Open URLs' action \u2192 add to home screen.", stopUrl);
+			new Setting(containerEl)
+				.setName("Transcribe latest recording URL")
+				.setDesc("Used as the final step in your iOS Shortcut after recording and saving audio.")
+				.addText((text) =>
+					text.setValue(transcribeLatestUrl).then((t) => {
+						t.inputEl.readOnly = true;
+						t.inputEl.style.fontSize = "11px";
+						t.inputEl.style.width = "100%";
+					}),
+				)
+				.addButton((btn) =>
+					btn.setButtonText("Copy").onClick(() => {
+						navigator.clipboard.writeText(transcribeLatestUrl).then(() => {
+							btn.setButtonText("Copied!");
+							setTimeout(() => btn.setButtonText("Copy"), 2000);
+						});
+					}),
+				);
 		}
 
 		// ── Tools ────────────────────────────────────────────────────────────

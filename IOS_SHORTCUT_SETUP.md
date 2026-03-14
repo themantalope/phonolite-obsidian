@@ -1,6 +1,17 @@
 # iOS Shortcut Setup for Phonolite
 
-Set up two home screen shortcuts — one to start recording, one to stop. They sit side by side and work like physical buttons.
+Set up a single shortcut that does everything: records audio, saves it to your vault, and fires Phonolite to transcribe and create a note — all in one tap.
+
+---
+
+## How It Works
+
+The shortcut has three steps:
+1. **Record Audio** — iOS's native recorder. You see a big stop button. Tap it when you're done speaking.
+2. **Save File** — saves the recording directly into your Obsidian vault's recordings folder.
+3. **Open URL** — tells Phonolite to pick up the latest recording and run the full pipeline (transcribe → convert → note).
+
+No separate stop button needed. The recording UI is built into the shortcut itself.
 
 ---
 
@@ -10,97 +21,74 @@ You need two things installed in Obsidian:
 - **Phonolite** (of course)
 - **Obsidian Advanced URI** — free community plugin. Go to Settings → Community Plugins → Browse → search "Advanced URI" → Install → Enable.
 
+You also need to know your **vault's recordings folder path** on your iPhone. By default Phonolite saves recordings to `phonolite/recordings/` inside your vault. The full path on iPhone depends on where your vault lives:
+
+- **iCloud**: `iCloud Drive → Obsidian → [Your Vault Name] → phonolite → recordings`
+- **Local (On My iPhone)**: `On My iPhone → Obsidian → [Your Vault Name] → phonolite → recordings`
+
 ---
 
-## Step 1 — Get Your URLs
+## Step 1 — Copy Your URL
 
 1. Open Obsidian on your iPhone
-2. Go to **Settings → Phonolite**
-3. Scroll down to **iOS Shortcuts**
-4. Tap **Copy** next to **Start recording URL** — paste it somewhere temporary (Notes app, etc.)
-5. Tap **Copy** next to **Stop recording URL** — paste it too
-
-You now have two URLs. Keep them handy for the next steps.
+2. Go to **Settings → Phonolite** → scroll to **iOS Shortcuts**
+3. Tap **Copy** next to "Transcribe latest recording URL"
 
 ---
 
-## Step 2 — Create the Start Shortcut
+## Step 2 — Build the Shortcut
 
-1. Open the **Shortcuts** app
-2. Tap **+** (top right)
-3. Tap **Add Action**
-4. Search for **"Open URLs"** → tap it
-5. Tap the blue **URL** field → paste your **Start recording URL**
-6. Tap **+** below the first action to add a second action
-7. Search for **"Go to Home Screen"** → tap it
-8. Tap the shortcut name at the top → rename it **"Record"**
-9. Tap **Done**
+1. Open the **Shortcuts** app → tap **+** (top right)
 
-> The "Go to Home Screen" action fires immediately after the URL is opened. Obsidian launches in the background, starts recording, and you're already back on your home screen — ready to tap Stop when you're done.
+**Add action 1: Record Audio**
+2. Tap **Add Action** → search **"Record Audio"** → tap it
+3. Leave the default settings (it will record until you tap Stop)
 
----
+**Add action 2: Save File**
+4. Tap **+** below the first action → search **"Save File"** → tap it
+5. Tap the file input field — it should reference the audio from the previous step
+6. Turn **OFF** "Ask Where to Save"
+7. Tap the folder path and navigate to your vault's recordings folder:
+   - iCloud: `iCloud Drive → Obsidian → [Vault Name] → phonolite → recordings`
+   - Local: `On My iPhone → Obsidian → [Vault Name] → phonolite → recordings`
+   > If the `phonolite/recordings` folder doesn't exist yet, open Obsidian and make one recording via the mic button first — Phonolite creates the folder automatically.
 
-## Step 3 — Add the Start Shortcut to Your Home Screen
+**Add action 3: Open URL**
+8. Tap **+** → search **"Open URLs"** → tap it
+9. Tap the blue URL field → paste your copied URL
 
-1. In the Shortcuts app, find your **Record** shortcut
-2. Tap the **···** menu (three dots) on the shortcut tile
-3. Tap **Add to Home Screen**
-4. Change the icon if you like — a red circle 🔴 works well
-5. Tap **Add**
-
----
-
-## Step 4 — Create the Stop Shortcut
-
-Repeat the same process with your Stop recording URL:
-
-1. Tap **+** in Shortcuts
-2. Add an **Open URLs** action
-3. Paste your **Stop recording URL**
-4. Tap **+** → add a **"Go to Home Screen"** action
-5. Name it **"Stop"**
-6. Tap **Done**
-7. Tap **···** → **Add to Home Screen**
-8. Use a different icon — a square ⏹ works well
-9. Tap **Add**
+**Name and save**
+10. Tap the shortcut name at the top → rename it **"Phonolite"** (or anything you like)
+11. Tap **Done**
 
 ---
 
-## Step 5 — Arrange Them on Your Home Screen
+## Step 3 — Add to Home Screen
 
-Move the two icons so they sit side by side. They act like a pair of physical buttons — tap **Record** to start, tap **Stop** when you're done.
+1. Tap the **···** menu on your new shortcut → **Add to Home Screen**
+2. Pick an icon and name
+3. Tap **Add**
 
 ---
 
-## Step 6 — Test It
+## Step 4 — Test It
 
-1. Tap **Record** — Obsidian opens and recording starts. You'll see a "🔴 Recording started" notice.
-2. Speak your note.
-3. Tap **Stop** — Obsidian briefly comes to the front, recording stops, and Phonolite processes your audio.
-4. Check your vault — a new note should appear within a few seconds.
-
-> **First-time permission**: iOS may ask "Open in Obsidian?" the first time you tap each shortcut. Tap **Open**. It won't ask again after that.
+1. Tap the shortcut on your home screen
+2. The iOS recording UI appears — speak your note
+3. Tap **Stop** when done
+4. The shortcut saves the file and opens Obsidian briefly
+5. Phonolite picks up the recording and processes it
+6. Check your vault — a new note should appear within a few seconds
 
 ---
 
 ## Optional: Action Button (iPhone 15 Pro / 16 series)
 
-If your iPhone has an Action Button on the left side, you can assign it to toggle recording — no screen needed.
+Assign the shortcut to the Action Button for hardware-button recording:
 
 1. Go to **Settings → Action Button**
-2. Swipe to **Shortcut**
-3. Tap **Choose a Shortcut** → select your **Record** shortcut (or create a new one using the Toggle recording URL from Phonolite settings)
-4. Press the Action Button once to start, press again to stop
-
----
-
-## Optional: Back Tap (any iPhone, iOS 14+)
-
-Double or triple-tap the back of your phone to trigger a shortcut. Useful if you want to stop recording without looking at your screen.
-
-1. Go to **Settings → Accessibility → Touch → Back Tap**
-2. Tap **Double Tap** → scroll to **Shortcuts** → select **Stop**
-3. Now double-tap the back of your phone to stop recording from anywhere
+2. Swipe to **Shortcut** → tap **Choose a Shortcut** → select your Phonolite shortcut
+3. Press the Action Button to launch the recording UI
 
 ---
 
@@ -108,7 +96,7 @@ Double or triple-tap the back of your phone to trigger a shortcut. Useful if you
 
 | Problem | Fix |
 |---------|-----|
-| Shortcut does nothing | Make sure Obsidian Advanced URI is installed and enabled |
-| "Vault not found" error | Re-copy the URLs from Phonolite settings — they are generated fresh each time |
-| Recording starts but note never appears | Check that your Phonolite API key is set in Settings → Phonolite |
-| iOS keeps asking "Open in Obsidian?" | This stops after a few uses — it's a one-time iOS security prompt per shortcut |
+| "No audio files found" notice | The Save File action is pointing to the wrong folder, or the folder doesn't exist yet — make one recording via Obsidian first |
+| Shortcut can't find the recordings folder | Check that the folder path in the Save File action matches `recordingsFolder` in Phonolite settings |
+| Obsidian opens but nothing happens | Make sure Obsidian Advanced URI is installed and enabled |
+| Note never appears | Check your API key in Settings → Phonolite |

@@ -85,6 +85,12 @@ export default class PhonoLitePlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: "transcribe-latest-recording",
+			name: "Transcribe latest recording",
+			callback: () => this.transcribeLatestRecordingCommand(),
+		});
+
+		this.addCommand({
 			id: "convert-transcript",
 			name: "Convert transcript to note",
 			callback: () => this.convertTranscriptCommand(),
@@ -204,6 +210,56 @@ export default class PhonoLitePlugin extends Plugin {
 	}
 
 	// ── Retry commands ──────────────────────────────────────────────────────
+
+	private async transcribeLatestRecordingCommand() {
+		if (!this.settings.apiKey) {
+			new Notice("Set your Phonolite API key in settings.", 4000);
+			return;
+		}
+
+		const folder = this.settings.recordingsFolder.trim();
+		if (!folder) {
+			new Notice("No recordings folder configured in Phonolite settings.", 4000);
+			return;
+		}
+
+		const exists = await this.app.vault.adapter.exists(folder);
+		if (!exists) {
+			new Notice("Recordings folder not found.", 4000);
+			return;
+		}
+
+		const listed = await this.app.vault.adapter.list(folder);
+		const audioExtensions = ["webm", "wav", "mp3", "ogg", "m4a"];
+		const audioFiles = listed.files.filter((f) =>
+			audioExtensions.some((ext) => f.toLowerCase().endsWith(`.${ext}`)),
+		);
+
+		if (audioFiles.length === 0) {
+			new Notice("No audio files found in recordings folder.", 4000);
+			return;
+		}
+
+		// Find the most recently modified file
+		let latestPath: string = audioFiles[0]!;
+		let latestMtime = 0;
+		for (const filePath of audioFiles) {
+			const stat = await this.app.vault.adapter.stat(filePath);
+			if (stat && stat.mtime > latestMtime) {
+				latestMtime = stat.mtime;
+				latestPath = filePath;
+			}
+		}
+
+		const file = this.app.vault.getFileByPath(latestPath);
+		if (!file) {
+			new Notice("Could not open recording file.", 4000);
+			return;
+		}
+
+		new Notice("Processing latest recording…", 2000);
+		await this.processAudioFile(file);
+	}
 
 	private async transcribeFileCommand() {
 		if (!this.settings.apiKey) {
