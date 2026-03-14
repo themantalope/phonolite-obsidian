@@ -232,16 +232,11 @@ export default class PhonoLitePlugin extends Plugin {
 			return;
 		}
 
-		const exists = await this.app.vault.adapter.exists(folder);
-		if (!exists) {
-			new Notice("Recordings folder not found.", 4000);
-			return;
-		}
-
-		const listed = await this.app.vault.adapter.list(folder);
-		const audioExtensions = ["webm", "wav", "mp3", "ogg", "m4a"];
-		const audioFiles = listed.files.filter((f) =>
-			audioExtensions.some((ext) => f.toLowerCase().endsWith(`.${ext}`)),
+		// Use the vault index (getFiles) — it's kept current by Obsidian's file watcher
+		// and is more reliable than vault.adapter.list() which can return a stale cache on iOS.
+		const audioExtensions = new Set(["webm", "wav", "mp3", "ogg", "m4a"]);
+		const audioFiles = this.app.vault.getFiles().filter(
+			(f) => f.path.startsWith(folder + "/") && audioExtensions.has(f.extension.toLowerCase()),
 		);
 
 		if (audioFiles.length === 0) {
@@ -249,16 +244,9 @@ export default class PhonoLitePlugin extends Plugin {
 			return;
 		}
 
-		// Find the most recently modified file
-		let latestPath: string = audioFiles[0]!;
-		let latestMtime = 0;
-		for (const filePath of audioFiles) {
-			const stat = await this.app.vault.adapter.stat(filePath);
-			if (stat && stat.mtime > latestMtime) {
-				latestMtime = stat.mtime;
-				latestPath = filePath;
-			}
-		}
+		// Sort by vault-tracked mtime descending — picks the file Obsidian knows is newest
+		audioFiles.sort((a, b) => b.stat.mtime - a.stat.mtime);
+		const latestPath = audioFiles[0]!.path;
 
 		// Wait for the file to finish writing (important when called from iOS Shortcut
 		// immediately after Save File — iCloud may still be flushing bytes to disk).
