@@ -51,12 +51,12 @@ You can start a Phonolite recording directly from your iPhone home screen or Loc
 
 **Requirements**: the free [Obsidian Advanced URI](https://obsidian.md/plugins?id=obsidian-advanced-uri) community plugin must be installed in your vault.
 
-**Setup**:
+**Setup**: create two home screen shortcuts — one to start, one to stop.
+
 1. Install **Obsidian Advanced URI** via Community Plugins
 2. Open Obsidian → **Settings** → **Phonolite** → scroll to **iOS Shortcuts**
-3. Tap **Copy** next to "Toggle recording URL" — the correct URL for your vault is pre-filled
-4. Open the **Shortcuts** app on your iPhone
-5. Create a new shortcut with a single **"Open URLs"** action and paste the copied URL
-6. Add the shortcut to your Home Screen or Lock Screen
+3. Copy the **Start recording URL** and the **Stop recording URL**
+4. In the **Shortcuts** app, create two shortcuts — each with a single **"Open URLs"** action
+5. Add both to your Home Screen and place them side by side
 
-One shortcut does it all — tap to start recording, tap again to stop.
+For a full step-by-step walkthrough including Action Button and Back Tap setup, see [IOS_SHORTCUT_SETUP.md](IOS_SHORTCUT_SETUP.md).

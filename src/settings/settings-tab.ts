@@ -200,33 +200,37 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 			new Setting(containerEl).setName("iOS Shortcuts").setHeading();
 
 			const vaultName = encodeURIComponent(this.app.vault.getName());
-			const toggleUrl = `obsidian://advanced-uri?vault=${vaultName}&commandid=phonolite:toggle-recording`;
+			const startUrl  = `obsidian://advanced-uri?vault=${vaultName}&commandid=phonolite:start-recording`;
+			const stopUrl   = `obsidian://advanced-uri?vault=${vaultName}&commandid=phonolite:stop-recording`;
 
 			new Setting(containerEl)
 				.setDesc(
-					"Add a one-tap shortcut to your iPhone home screen. " +
-					"Tap once to start recording, tap again to stop. " +
+					"Create two shortcuts on your iPhone home screen — one to start, one to stop. " +
 					"Requires the free Obsidian Advanced URI plugin.",
 				);
 
-			new Setting(containerEl)
-				.setName("Toggle recording URL")
-				.setDesc("Paste into a Shortcuts → Open URLs action.")
-				.addText((text) =>
-					text.setValue(toggleUrl).then((t) => {
-						t.inputEl.readOnly = true;
-						t.inputEl.style.fontSize = "11px";
-						t.inputEl.style.width = "100%";
-					}),
-				)
-				.addButton((btn) =>
-					btn.setButtonText("Copy").onClick(() => {
-						navigator.clipboard.writeText(toggleUrl).then(() => {
-							btn.setButtonText("Copied!");
-							setTimeout(() => btn.setButtonText("Copy"), 2000);
-						});
-					}),
-				);
+			const makeUrlRow = (name: string, desc: string, url: string) =>
+				new Setting(containerEl)
+					.setName(name)
+					.setDesc(desc)
+					.addText((text) =>
+						text.setValue(url).then((t) => {
+							t.inputEl.readOnly = true;
+							t.inputEl.style.fontSize = "11px";
+							t.inputEl.style.width = "100%";
+						}),
+					)
+					.addButton((btn) =>
+						btn.setButtonText("Copy").onClick(() => {
+							navigator.clipboard.writeText(url).then(() => {
+								btn.setButtonText("Copied!");
+								setTimeout(() => btn.setButtonText("Copy"), 2000);
+							});
+						}),
+					);
+
+			makeUrlRow("Start recording URL", "Copy → paste into a new Shortcuts "Open URLs" action → add to home screen.", startUrl);
+			makeUrlRow("Stop recording URL",  "Copy → paste into a second Shortcuts "Open URLs" action → add to home screen.", stopUrl);
 		}
 
 		// ── Tools ────────────────────────────────────────────────────────────
