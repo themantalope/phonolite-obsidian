@@ -232,34 +232,51 @@ export default class PhonoLitePlugin extends Plugin {
 			return;
 		}
 
-		// Use the vault index (getFiles) — it's kept current by Obsidian's file watcher
-		// and is more reliable than vault.adapter.list() which can return a stale cache on iOS.
 		const audioExtensions = new Set(["webm", "wav", "mp3", "ogg", "m4a"]);
-		const audioFiles = this.app.vault.getFiles().filter(
-			(f) => f.path.startsWith(folder + "/") && audioExtensions.has(f.extension.toLowerCase()),
-		);
 
-		if (audioFiles.length === 0) {
+		const getAudioFiles = () =>
+			this.app.vault.getFiles().filter(
+				(f) => f.path.startsWith(folder + "/") && audioExtensions.has(f.extension.toLowerCase()),
+			);
+
+		// Snapshot the current newest mtime so we can detect when a new file arrives.
+		const initialFiles = getAudioFiles();
+		const initialLatestMtime = initialFiles.length > 0
+			? Math.max(...initialFiles.map((f) => f.stat.mtime))
+			: 0;
+
+		// Poll the vault index until a file newer than the snapshot appears (up to 15s).
+		// The iOS Shortcut saves the file before firing the URL, but Obsidian's file
+		// watcher may not have updated the in-memory index yet when this command runs.
+		const pollInterval = 500;
+		const pollTimeout = 15_000;
+		const pollStart = Date.now();
+		let latestFile = initialFiles.sort((a, b) => b.stat.mtime - a.stat.mtime)[0];
+
+		while (Date.now() - pollStart < pollTimeout) {
+			await new Promise<void>((resolve) => setTimeout(resolve, pollInterval));
+			const current = getAudioFiles();
+			const newest = current.sort((a, b) => b.stat.mtime - a.stat.mtime)[0];
+			if (newest && newest.stat.mtime > initialLatestMtime) {
+				latestFile = newest;
+				break;
+			}
+		}
+
+		if (!latestFile) {
 			new Notice("No audio files found in recordings folder.", 4000);
 			return;
 		}
 
-		// Sort by vault-tracked mtime descending — picks the file Obsidian knows is newest
-		audioFiles.sort((a, b) => b.stat.mtime - a.stat.mtime);
-		const latestPath = audioFiles[0]!.path;
-
-		// Wait for the file to finish writing (important when called from iOS Shortcut
-		// immediately after Save File — iCloud may still be flushing bytes to disk).
-		const isReady = await this.waitForFileStable(latestPath);
+		// Wait for the file bytes to finish flushing (iCloud sync race).
+		const isReady = await this.waitForFileStable(latestFile.path);
 		if (!isReady) {
 			new Notice("Recording file is not ready yet — try again in a moment.", 4000);
 			return;
 		}
 
 		new Notice("Processing latest recording…", 2000);
-		// Read directly via adapter — bypasses the vault index, which may not yet
-		// reflect a file written externally by iOS Shortcuts.
-		await this.processAudioAtPath(latestPath);
+		await this.processAudioAtPath(latestFile.path);
 	}
 
 	private async transcribeFileCommand() {
