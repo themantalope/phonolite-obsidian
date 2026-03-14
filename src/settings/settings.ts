@@ -15,6 +15,8 @@ export const DEFAULT_NOTE_TEMPLATE = `---
 tags: {{tags}}
 date: {{date}}
 source: phonolite
+audio: {{audioLink}}
+transcript: {{transcriptLink}}
 ---
 
 # {{title}}

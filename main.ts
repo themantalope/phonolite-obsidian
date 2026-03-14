@@ -341,6 +341,7 @@ export default class PhonoLitePlugin extends Plugin {
 			this.settings.noteTemplate,
 			payload,
 			transcript,
+			{ audio: existing?.recordingPath, transcript: file.path },
 		);
 		const noteHash = await sha256Hex(markdown);
 
@@ -478,7 +479,7 @@ export default class PhonoLitePlugin extends Plugin {
 		record.audioSeconds = audioSeconds;
 		if (transcribeOperationId) record.operationIds.push(transcribeOperationId);
 
-		const transcriptPath = await this.saveTranscript(transcript, timestamp);
+		const transcriptPath = await this.saveTranscript(transcript, timestamp, record.recordingPath);
 		if (transcriptPath) record.transcriptPath = transcriptPath;
 		this.records.upsert(record);
 
@@ -523,6 +524,7 @@ export default class PhonoLitePlugin extends Plugin {
 			this.settings.noteTemplate,
 			payload,
 			transcript,
+			{ audio: record.recordingPath, transcript: record.transcriptPath },
 		);
 		const noteHash = await sha256Hex(markdown);
 
@@ -556,6 +558,17 @@ export default class PhonoLitePlugin extends Plugin {
 		record.notePath = outputPath;
 		this.records.upsert(record);
 
+		// Link note back from transcript file
+		if (record.transcriptPath) {
+			try {
+				const transcriptContent = await this.app.vault.adapter.read(record.transcriptPath);
+				await this.app.vault.adapter.write(
+					record.transcriptPath,
+					transcriptContent + `\n\n---\nnote: "[[${outputPath}]]"\n`,
+				);
+			} catch { /* non-critical */ }
+		}
+
 		void callAck({
 			apiKey: this.settings.apiKey,
 			serverUrl: this.settings.serverUrl,
@@ -588,14 +601,17 @@ export default class PhonoLitePlugin extends Plugin {
 		}
 	}
 
-	private async saveTranscript(text: string, timestamp: string): Promise<string | undefined> {
+	private async saveTranscript(text: string, timestamp: string, recordingPath?: string): Promise<string | undefined> {
 		const folder = this.settings.transcriptsFolder.trim();
 		if (!folder) return undefined;
 		const path = `${folder}/${timestamp}.md`;
 		try {
 			const exists = await this.app.vault.adapter.exists(folder);
 			if (!exists) await this.app.vault.createFolder(folder);
-			await this.app.vault.create(path, text);
+			const date = new Date().toISOString().slice(0, 10);
+			const audioLine = recordingPath ? `\naudio: "[[${recordingPath}]]"` : "";
+			const content = `---\ndate: ${date}\nsource: phonolite${audioLine}\n---\n\n${text}`;
+			await this.app.vault.create(path, content);
 			return path;
 		} catch (err) {
 			warn("failed to save transcript:", err);

@@ -229,8 +229,8 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 						}),
 					);
 
-			makeUrlRow("Start recording URL", "Copy → paste into a new Shortcuts "Open URLs" action → add to home screen.", startUrl);
-			makeUrlRow("Stop recording URL",  "Copy → paste into a second Shortcuts "Open URLs" action → add to home screen.", stopUrl);
+			makeUrlRow("Start recording URL", "Copy \u2192 paste into a new Shortcuts 'Open URLs' action \u2192 add to home screen.", startUrl);
+			makeUrlRow("Stop recording URL",  "Copy \u2192 paste into a second Shortcuts 'Open URLs' action \u2192 add to home screen.", stopUrl);
 		}
 
 		// ── Tools ────────────────────────────────────────────────────────────

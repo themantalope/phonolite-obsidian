@@ -31,8 +31,12 @@ You now have two URLs. Keep them handy for the next steps.
 3. Tap **Add Action**
 4. Search for **"Open URLs"** → tap it
 5. Tap the blue **URL** field → paste your **Start recording URL**
-6. Tap the shortcut name at the top → rename it **"Record"**
-7. Tap **Done**
+6. Tap **+** below the first action to add a second action
+7. Search for **"Go to Home Screen"** → tap it
+8. Tap the shortcut name at the top → rename it **"Record"**
+9. Tap **Done**
+
+> The "Go to Home Screen" action fires immediately after the URL is opened. Obsidian launches in the background, starts recording, and you're already back on your home screen — ready to tap Stop when you're done.
 
 ---
 
@@ -53,11 +57,12 @@ Repeat the same process with your Stop recording URL:
 1. Tap **+** in Shortcuts
 2. Add an **Open URLs** action
 3. Paste your **Stop recording URL**
-4. Name it **"Stop"**
-5. Tap **Done**
-6. Tap **···** → **Add to Home Screen**
-7. Use a different icon — a square ⏹ works well
-8. Tap **Add**
+4. Tap **+** → add a **"Go to Home Screen"** action
+5. Name it **"Stop"**
+6. Tap **Done**
+7. Tap **···** → **Add to Home Screen**
+8. Use a different icon — a square ⏹ works well
+9. Tap **Add**
 
 ---
 
