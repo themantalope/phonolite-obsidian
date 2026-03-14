@@ -199,33 +199,54 @@ export class PhonoLiteSettingTab extends PluginSettingTab {
 		if (Platform.isMobile) {
 			new Setting(containerEl).setName("iOS Shortcuts").setHeading();
 
-			const vaultName = encodeURIComponent(this.app.vault.getName());
-			const transcribeLatestUrl = `obsidian://advanced-uri?vault=${vaultName}&commandid=phonolite:transcribe-latest-recording`;
+			const rawVaultName = this.app.vault.getName();
+			const encodedVaultName = encodeURIComponent(rawVaultName);
+			const recordingsFolder = this.plugin.settings.recordingsFolder || "phonolite/recordings";
+			const transcribeLatestUrl = `obsidian://advanced-uri?vault=${encodedVaultName}&commandid=phonolite:transcribe-latest-recording`;
+			const iCloudPath  = `iCloud Drive/Obsidian/${rawVaultName}/${recordingsFolder}`;
+			const localPath   = `On My iPhone/Obsidian/${rawVaultName}/${recordingsFolder}`;
+
+			const makeCopyRow = (name: string, desc: string, value: string) =>
+				new Setting(containerEl)
+					.setName(name)
+					.setDesc(desc)
+					.addText((text) =>
+						text.setValue(value).then((t) => {
+							t.inputEl.readOnly = true;
+							t.inputEl.style.fontSize = "11px";
+							t.inputEl.style.width = "100%";
+						}),
+					)
+					.addButton((btn) =>
+						btn.setButtonText("Copy").onClick(() => {
+							navigator.clipboard.writeText(value).then(() => {
+								btn.setButtonText("Copied!");
+								setTimeout(() => btn.setButtonText("Copy"), 2000);
+							});
+						}),
+					);
 
 			new Setting(containerEl)
 				.setDesc(
-					"Create a single shortcut that records audio, saves it, and transcribes it automatically. " +
+					"Use these values when building your iOS Shortcut. " +
 					"Requires the free Obsidian Advanced URI plugin.",
 				);
 
+			new Setting(containerEl).setName("Save location").setHeading();
+
 			new Setting(containerEl)
-				.setName("Transcribe latest recording URL")
-				.setDesc("Used as the final step in your iOS Shortcut after recording and saving audio.")
-				.addText((text) =>
-					text.setValue(transcribeLatestUrl).then((t) => {
-						t.inputEl.readOnly = true;
-						t.inputEl.style.fontSize = "11px";
-						t.inputEl.style.width = "100%";
-					}),
-				)
-				.addButton((btn) =>
-					btn.setButtonText("Copy").onClick(() => {
-						navigator.clipboard.writeText(transcribeLatestUrl).then(() => {
-							btn.setButtonText("Copied!");
-							setTimeout(() => btn.setButtonText("Copy"), 2000);
-						});
-					}),
-				);
+				.setDesc("Paste one of these into the 'Save File' action in your shortcut. Use the iCloud path if your vault syncs via iCloud, otherwise use the local path.");
+
+			makeCopyRow("iCloud vault path", "For vaults stored in iCloud Drive.", iCloudPath);
+			makeCopyRow("Local vault path",  "For vaults stored on-device only.", localPath);
+
+			new Setting(containerEl).setName("Transcription").setHeading();
+
+			makeCopyRow(
+				"Transcribe latest recording URL",
+				"Paste into the final 'Open URLs' action in your shortcut.",
+				transcribeLatestUrl,
+			);
 		}
 
 		// ── Tools ────────────────────────────────────────────────────────────
